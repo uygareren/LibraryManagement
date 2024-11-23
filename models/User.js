@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const BorrowedBooks = require('./BorrowedBooks');
 
 const User = sequelize.define('User', {
   id: {
@@ -20,10 +21,23 @@ const User = sequelize.define('User', {
     defaultValue: DataTypes.NOW,
   },
 }, {
-  tableName: 'user',
-  timestamps: false, 
-  underscored: true 
-
+  tableName: 'user', 
+  timestamps: false,
+  underscored: true, 
 });
+
+User.associate = function(models) {
+  User.hasMany(models.BorrowedBooks, {
+    foreignKey: 'user_id',
+    as: 'borrowed_books'
+  });
+  User.hasOne(models.BorrowedBooks, { 
+    foreignKey: 'user_id', 
+    as: 'borrowing_books' 
+  });
+
+};
+
+
 
 module.exports = User;

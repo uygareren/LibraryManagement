@@ -25,4 +25,11 @@ const Book = sequelize.define('Book', {
     underscored: true 
 });
 
+Book.associate = function(models) {
+  Book.hasMany(models.BorrowedBooks, {
+    foreignKey: 'book_id',
+    as: 'borrowed_books'  
+  });
+};
+
 module.exports = Book;

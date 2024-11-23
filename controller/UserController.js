@@ -1,11 +1,50 @@
 const User = require("../models/User");
+const BorrowedBooks = require("../models/BorrowedBooks");
+const { Op } = require("sequelize");
+const Book = require("../models/Book");
+
 
 exports.GetUsers = async (req, res) => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      include: [
+        {
+          model: BorrowedBooks,
+          as: 'borrowed_books',
+          required: false,  
+          where: {
+            returned_at: { [Op.not]: null }, 
+          },
+          include: [
+            {
+              model: Book,
+              as: 'book', 
+              attributes: ['id', 'title'], 
+            },
+          ],
+        },
+        {
+          model: BorrowedBooks,
+          as: 'borrowing_books',
+          required: false,  
+          where: {
+            returned_at: null,  
+          },
+          include: [
+            {
+              model: Book,
+              as: 'book', 
+              attributes: ['id', 'title'], 
+            },
+          ],
+        },
+      ],
+    });
+
     if (users.length === 0) {
       return res.status(404).json({ message: 'No users found' });
     }
+
     res.status(200).json(users);
   } catch (error) {
     console.error(error);

@@ -7,12 +7,18 @@ const GetUserValidation = {
     }),
 };
 
+const PostUserValidation = {
+    body: Joi.object({
+        name: Joi.string().required(),
+    }),
+};
+
 
 const router = express.Router();
 
 const UserController = require("../controller/UserController");
 
-router.get("/users", UserController.GetUser);
-router.get("/users/:userId", validate(GetUserValidation), UserController.GetUserById);
-
+router.get("/", UserController.GetUser);
+router.get("/:userId", validate(GetUserValidation), UserController.GetUserById);
+router.post("/", validate(PostUserValidation), UserController.PostUser)
 module.exports = router;

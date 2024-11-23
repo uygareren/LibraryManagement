@@ -18,7 +18,8 @@ const router = express.Router();
 
 const UserController = require("../controller/UserController");
 
-router.get("/", UserController.GetUser);
+router.get("/", UserController.GetUsers);
 router.get("/:userId", validate(GetUserValidation), UserController.GetUserById);
 router.post("/", validate(PostUserValidation), UserController.PostUser)
+
 module.exports = router;

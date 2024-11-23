@@ -33,7 +33,7 @@ User.associate = function(models) {
   });
   User.hasOne(models.BorrowedBooks, { 
     foreignKey: 'user_id', 
-    as: 'borrowing_books' 
+    as: 'borrowing_books'
   });
 
 };

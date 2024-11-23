@@ -56,7 +56,40 @@ exports.GetUserById = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(userId, {
+      include: [
+        {
+          model: BorrowedBooks,
+          as: 'borrowed_books',
+          required: false,  
+          where: {
+            returned_at: { [Op.not]: null }, 
+          },
+          include: [
+            {
+              model: Book,
+              as: 'book', 
+              attributes: ['id', 'title'], 
+            },
+          ],
+        },
+        {
+          model: BorrowedBooks,
+          as: 'borrowing_books',
+          required: false, 
+          where: {
+            returned_at: null,  
+          },
+          include: [
+            {
+              model: Book,
+              as: 'book', 
+              attributes: ['id', 'title'], 
+            },
+          ],
+        },
+      ],
+    });
     if (!user) {
       return res.status(404).json({ message: `User with ID ${userId} not found` });
     }

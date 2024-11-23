@@ -30,6 +30,10 @@ Book.associate = function(models) {
     foreignKey: 'book_id',
     as: 'borrowed_books'  
   });
+  Book.hasMany(models.BorrowedBooks, {
+    foreignKey: 'book_id',
+    as: 'books'  
+  });
 };
 
 module.exports = Book;

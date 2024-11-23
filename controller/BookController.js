@@ -1,16 +1,52 @@
+const { Op, fn, col } = require("sequelize");
 const Book = require("../models/Book");
+const BorrowedBooks = require("../models/BorrowedBooks");
 
 exports.GetBooks = async (req, res) => {
-    try {
-      const books = await Book.findAll();
-      if (books.length === 0) {
-        return res.status(404).json({ message: 'No books found' });
-      }
-      res.status(200).json(books);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Error fetching books' });
+  try {
+    const books = await Book.findAll({
+      include: [
+        {
+          model: BorrowedBooks,
+          as: 'books',
+          required: false,
+          where: {
+            returned_at: { [Op.not]: null }, 
+          },
+          attributes: [],  
+        },
+      ],
+      attributes: {
+        include: [
+          [
+            fn('AVG', col('books.score')), 
+            'score',  
+          ],
+        ],
+      },
+      group: ['Book.id'], 
+    });
+
+    if (books.length == 0) {
+      return res.status(404).json({ message: 'No books found' });
     }
+
+    const result = books.map(book => {
+      const bookData = book.toJSON();
+      bookData.books = undefined; 
+
+      if (bookData.score !== null) {
+        bookData.score = parseFloat(bookData.score).toFixed(2);
+      }
+
+      return bookData;
+    });
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching books' });
+  }
 };
 
 exports.GetBookById = async (req, res) => {

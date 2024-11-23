@@ -53,11 +53,42 @@ exports.GetBookById = async (req, res) => {
     const {bookId} = req.params;
 
     try {
-      const book = await Book.findByPk(bookId);
+      const book = await Book.findByPk(bookId, {
+        include: [
+          {
+            model: BorrowedBooks,
+            as: 'books',
+            required: false,
+            where: {
+              returned_at: { [Op.not]: null }, 
+            },
+            attributes: [],  
+          },
+        ],
+        attributes: {
+          include: [
+            [
+              fn('AVG', col('books.score')), 
+              'score',  
+            ],
+          ],
+        },
+        group: ['Book.id'], 
+      });
+
       if (!book) {
         return res.status(404).json({ message: `Book with ID ${bookId} not found` });
       }
-      res.status(200).json(book);
+
+        const bookData = book.toJSON();
+        bookData.books = undefined; 
+  
+        if (bookData.score !== null) {
+          bookData.score = parseFloat(bookData.score).toFixed(2);
+        }
+  
+  
+      res.status(200).json(bookData);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Error fetching book' });

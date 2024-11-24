@@ -20,7 +20,7 @@ exports.GetBooks = async (req, res) => {
         include: [
           [
             fn('AVG', col('books.score')), 
-            'score',  
+            'avg_score',  
           ],
         ],
       },
@@ -35,8 +35,8 @@ exports.GetBooks = async (req, res) => {
       const bookData = book.toJSON();
       bookData.books = undefined; 
 
-      if (bookData.score !== null) {
-        bookData.score = parseFloat(bookData.score).toFixed(2);
+      if (bookData.avg_score !== null) {
+        bookData.avg_score = parseFloat(bookData.avg_score).toFixed(2);
       }
 
       return bookData;
@@ -50,49 +50,48 @@ exports.GetBooks = async (req, res) => {
 };
 
 exports.GetBookById = async (req, res) => {
-    const {bookId} = req.params;
+  const { bookId } = req.params;
 
-    try {
-      const book = await Book.findByPk(bookId, {
-        include: [
-          {
-            model: BorrowedBooks,
-            as: 'books',
-            required: false,
-            where: {
-              returned_at: { [Op.not]: null }, 
-            },
-            attributes: [],  
+  try {
+    const book = await Book.findByPk(bookId, {
+      include: [
+        {
+          model: BorrowedBooks,
+          as: 'books',
+          required: false,
+          where: {
+            returned_at: { [Op.not]: null }, 
           },
-        ],
-        attributes: {
-          include: [
-            [
-              fn('AVG', col('books.score')), 
-              'score',  
-            ],
-          ],
+          attributes: [],  
         },
-        group: ['Book.id'], 
-      });
+      ],
+      attributes: {
+        include: [
+          [
+            fn('AVG', col('books.score')), 
+            'avg_score',  
+          ],
+        ],
+      },
+      group: ['Book.id'], 
+    });
 
-      if (!book) {
-        return res.status(404).json({ message: `Book with ID ${bookId} not found` });
-      }
-
-        const bookData = book.toJSON();
-        bookData.books = undefined; 
-  
-        if (bookData.score !== null) {
-          bookData.score = parseFloat(bookData.score).toFixed(2);
-        }
-  
-  
-      res.status(200).json(bookData);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Error fetching book' });
+    if (!book) {
+      return res.status(404).json({ message: `Book with ID ${bookId} not found` });
     }
+
+    const bookData = book.toJSON();
+    bookData.books = undefined;
+
+    if (bookData.avg_score !== null) {
+      bookData.avg_score = parseFloat(bookData.avg_score).toFixed(2);
+    }
+
+    res.status(200).json(bookData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching book' });
+  }
 };
 
 exports.PostBook = async(req, res) => {

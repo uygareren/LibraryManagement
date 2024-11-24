@@ -169,18 +169,29 @@ exports.GetUserById = async (req, res) => {
 };
 
 exports.PostUser = async (req, res) => {
-    const {name} = req.body; 
+  const { name } = req.body; 
 
-    try {
-        const newUser = await User.create({name});
-        
-        res.status(201).json({ message: 'User created successfully', user: newUser });
+  try {
+    // Check if exist
+    const isExistUser = await User.findOne({
+      where: { name: name }
+    });
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error inserting user' });
+    if (isExistUser) {
+      return res.status(400).json({ message: 'There is already a user with this name. Please try another name.' });
     }
-}
+
+    //Create new user
+    
+    const newUser = await User.create({ name });
+
+    res.status(201).json({ message: 'User created successfully', user: newUser });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error inserting user' });
+  }
+};
 
 exports.BorrowBook = async (req, res, next) => {
   try {

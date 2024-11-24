@@ -161,3 +161,43 @@ exports.BorrowBook = async (req, res, next) => {
     next(error); 
   }
 };
+
+exports.ReturnBook = async (req, res, next) => {
+  const { userId, bookId } = req.params;
+  const {score} = req.body;
+
+  try {
+
+    if(score < 0 && score > 10){
+      return res.status(400).json({ success: false, message: "Score must be between 0 and 10" });
+    }
+
+    const borrowedBook = await BorrowedBooks.findOne({
+      where:{
+        user_id:userId,
+        book_id:bookId,
+        returned_at:null
+      }
+    });
+
+    if (!borrowedBook) {
+      return res.status(404).json({ success: false, message: "No borrowed book found" });
+    }
+
+    borrowedBook.returned_at = Date.now();
+    borrowedBook.score = score;
+
+    await borrowedBook.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Book returned successfully",
+      data: borrowedBook,
+    });
+
+    
+  } catch (error) {
+    console.error("Error returning book:", error);
+    next(error); 
+  }
+}

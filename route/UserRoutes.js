@@ -13,13 +13,23 @@ const PostUserValidation = {
     }),
 };
 
+const BorrowValidation = {
+    params: Joi.object({
+        userId: Joi.number().required(),
+        bookId: Joi.number().required(),
+    }),
+};
 
 const router = express.Router();
 
 const UserController = require("../controller/UserController");
 
+// User routes
 router.get("/", UserController.GetUsers);
 router.get("/:userId", validate(GetUserValidation), UserController.GetUserById);
 router.post("/", validate(PostUserValidation), UserController.PostUser)
+
+// Borrow book route
+router.post("/:userId/borrow/:bookId", validate(BorrowValidation), UserController.BorrowBook);
 
 module.exports = router;

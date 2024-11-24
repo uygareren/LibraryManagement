@@ -12,7 +12,7 @@ const BorrowedBooks = sequelize.define('BorrowedBooks', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'user', // Ensure the table name is 'user' (lowercase)
+      model: 'user', 
       key: 'id',
     },
   },
@@ -20,7 +20,7 @@ const BorrowedBooks = sequelize.define('BorrowedBooks', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'books', // Ensure the table name is 'books' (lowercase)
+      model: 'books', 
       key: 'id',
     },
   },

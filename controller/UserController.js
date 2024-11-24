@@ -113,3 +113,51 @@ exports.PostUser = async (req, res) => {
         res.status(500).json({ message: 'Error inserting user' });
     }
 }
+
+exports.BorrowBook = async (req, res, next) => {
+  try {
+    const { userId, bookId } = req.params;
+
+    const isBorrowing = await BorrowedBooks.findOne({
+      where: {
+        user_id: userId,
+        returned_at: null,
+      },
+    });
+
+    if (isBorrowing) {
+      return res
+        .status(400)
+        .json({ success: false, message: "You have already borrowed a book!" });
+    }
+
+    // Check the user 
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Check the book
+    const book = await Book.findByPk(bookId);
+    if (!book) {
+      return res.status(404).json({ success: false, message: "Book not found" });
+    }
+
+    // Create the borrowing
+    const newBorrowingBook = await BorrowedBooks.create({
+      user_id: userId,
+      book_id: bookId,
+      borrowed_at: Date.now()
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Book borrowed successfully!",
+      data: newBorrowingBook,
+    });
+
+  } catch (error) {
+    console.error("Error borrowing book:", error);
+    next(error); 
+  }
+};

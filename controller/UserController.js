@@ -11,41 +11,74 @@ exports.GetUsers = async (req, res) => {
         {
           model: BorrowedBooks,
           as: 'borrowed_books',
-          required: false,  
+          required: false,
           where: {
-            returned_at: { [Op.not]: null }, 
+            returned_at: { [Op.not]: null },
           },
           include: [
             {
               model: Book,
-              as: 'book', 
-              attributes: ['id', 'title'], 
+              as: 'book',
+              attributes: ['title'], 
             },
           ],
         },
         {
           model: BorrowedBooks,
           as: 'borrowing_books',
-          required: false,  
+          required: false,
           where: {
-            returned_at: null,  
+            returned_at: null,
           },
           include: [
             {
               model: Book,
-              as: 'book', 
-              attributes: ['id', 'title'], 
+              as: 'book',
+              attributes: ['title'], 
             },
           ],
         },
       ],
     });
 
-    if (users.length === 0) {
+    const formattedUsers = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+      borrowed_books: Array.isArray(user.borrowed_books) 
+        ? user.borrowed_books.map((borrowedBook) => ({
+            id: borrowedBook.id,
+            user_id: borrowedBook.user_id,
+            book_id: borrowedBook.book_id,
+            book_title: borrowedBook.book ? borrowedBook.book.title : null,
+            borrowed_at: borrowedBook.borrowed_at,
+            returned_at: borrowedBook.returned_at,
+            score: borrowedBook.score,
+            created_at: borrowedBook.created_at,
+            updated_at: borrowedBook.updated_at,
+          }))
+        : [],
+      borrowing_books: Array.isArray(user.borrowing_books) 
+        ? user.borrowing_books.map((borrowingBook) => ({
+            id: borrowingBook.id,
+            user_id: borrowingBook.user_id,
+            book_id: borrowingBook.book_id,
+            book_title: borrowingBook.book ? borrowingBook.book.title : null,
+            borrowed_at: borrowingBook.borrowed_at,
+            returned_at: borrowingBook.returned_at,
+            score: borrowingBook.score,
+            created_at: borrowingBook.created_at,
+            updated_at: borrowingBook.updated_at,
+          }))
+        : [],
+    }));
+
+    if (formattedUsers.length === 0) {
       return res.status(404).json({ message: 'No users found' });
     }
 
-    res.status(200).json(users);
+    res.status(200).json(formattedUsers);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error fetching users' });
@@ -61,39 +94,74 @@ exports.GetUserById = async (req, res) => {
         {
           model: BorrowedBooks,
           as: 'borrowed_books',
-          required: false,  
+          required: false,
           where: {
-            returned_at: { [Op.not]: null }, 
+            returned_at: { [Op.not]: null },
           },
           include: [
             {
               model: Book,
-              as: 'book', 
-              attributes: ['id', 'title'], 
+              as: 'book',
+              attributes: ['title'], // Only include the title
             },
           ],
         },
         {
           model: BorrowedBooks,
           as: 'borrowing_books',
-          required: false, 
+          required: false,
           where: {
-            returned_at: null,  
+            returned_at: null,
           },
           include: [
             {
               model: Book,
-              as: 'book', 
-              attributes: ['id', 'title'], 
+              as: 'book',
+              attributes: ['title'], // Only include the title
             },
           ],
         },
       ],
     });
+
     if (!user) {
       return res.status(404).json({ message: `User with ID ${userId} not found` });
     }
-    res.status(200).json(user);
+
+    const formattedUser = {
+      id: user.id,
+      name: user.name,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+      borrowed_books: Array.isArray(user.borrowed_books)
+        ? user.borrowed_books.map((borrowedBook) => ({
+            id: borrowedBook.id,
+            user_id: borrowedBook.user_id,
+            book_id: borrowedBook.book_id,
+            book_title: borrowedBook.book ? borrowedBook.book.title : null,
+            borrowed_at: borrowedBook.borrowed_at,
+            returned_at: borrowedBook.returned_at,
+            score: borrowedBook.score,
+            created_at: borrowedBook.created_at,
+            updated_at: borrowedBook.updated_at,
+          }))
+        : [],
+      borrowing_books: Array.isArray(user.borrowing_books)
+        ? user.borrowing_books.map((borrowingBook) => ({
+            id: borrowingBook.id,
+            user_id: borrowingBook.user_id,
+            book_id: borrowingBook.book_id,
+            book_title: borrowingBook.book ? borrowingBook.book.title : null,
+            borrowed_at: borrowingBook.borrowed_at,
+            returned_at: borrowingBook.returned_at,
+            score: borrowingBook.score,
+            created_at: borrowingBook.created_at,
+            updated_at: borrowingBook.updated_at,
+          }))
+        : [],
+    };
+
+    res.status(200).json(formattedUser);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error fetching user' });
